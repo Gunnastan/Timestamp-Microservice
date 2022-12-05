@@ -18,16 +18,33 @@ app.get("/", function (req, res) {
   res.sendFile(__dirname + "/views/index.html");
 });
 
+app.get("/time", function (req, res) {
+  res.sendFile(__dirname + "/views/time.html");
+});
+
+app.get("/getheaderparser", function (req, res) {
+  res.sendFile(__dirname + "/views/headerparser.html");
+});
+
+
 // your first API endpoint...
 app.get("/api/hello", function (req, res) {
   res.json({ greeting: "hello API" });
 });
 
 app.get("/api", function (req, res) {
-  let presentDate = new Date();
+  var presentDate = new Date();
   res.json({
     unix: presentDate.getTime(),
     utc: presentDate.toUTCString(),
+  });
+});
+
+app.get("/api/whoami", function (req, res) {
+  res.json({ 
+    "ip address": req.connection.remoteAddress,
+    "language": req.headers["accept-language"],
+    "software": req.headers["user-agent"]
   });
 });
 
@@ -54,7 +71,9 @@ app.get("/api/:date", function (req, res) {
   }
 });
 
+
+
 // listen for requests :)
-var listener = app.listen(process.env.PORT, function () {
+var listener = app.listen(process.env.PORT || 3000, function () {
   console.log("Your app is listening on port " + listener.address().port);
 });
