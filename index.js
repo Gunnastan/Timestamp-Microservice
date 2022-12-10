@@ -44,6 +44,10 @@ app.get("/urlshortner", function (req, res) {
   res.sendFile(__dirname + "/views/urlshortner.html");
 });
 
+app.get("/exercisetracker", function (req, res) {
+  res.sendFile(__dirname + "/views/Exercisetracker.html");
+});
+
 // your first API endpoint...
 app.get("/api/hello", function (req, res) {
   res.json({ greeting: "hello API" });
@@ -114,7 +118,133 @@ app.get("/api/shorturl/:suffix", async function (req, res) {
   );
 });
 
-app.get("/api/:date", function (req, res) {
+let User = mongoose.model("User", new mongoose.Schema ({
+  username: {type: String, unique: true},
+  _id: String
+}))
+
+let Exercise = mongoose.model("Exercise", new mongoose.Schema ({
+  username: String,
+  description: {type: String, required: true},
+  duration: Number,
+  date: Date,
+  _id: String
+}))
+
+let count = 0;
+
+app.post("/api/users", function (req, res) {
+  console.log("first log")
+  let userID = mongoose.Types.ObjectId()
+  let userName = req.body.username
+  console.log(userID)
+  let newUser = new User({
+    username: req.body.username,
+    _id: userID
+  });
+
+  console.log("user added but not saved")
+
+  newUser.save((err, doc) => {
+    if (err) return console.error(err);
+    console.log("Saved Successfully");
+    res.json({
+      "added": true,
+      "username": newUser.username,
+      _id: newUser._id
+    });
+  });
+})
+
+app.get("/api/users", async (req, res) => {
+  console.log("get req")
+  let allUsers = await User.find()
+
+  console.log("users found")
+  res.json(allUsers)
+})
+
+app.post("/api/users/:_id/exercises", async (req, res) => {
+
+  // let userID = mongoose.Types.ObjectId()
+  console.log(req.params._id, "<= req params")
+  const _id = req.params._id
+  console.log(_id)
+  let description = req.body.description;
+  let duration = req.body.duration;
+  let date = req.body.date;
+  let presentDate = ''
+  if (!date) {
+    presentDate = new Date(Date.now())
+
+    console.log("date set here")
+
+    let myUser = await User.find({_id: _id})
+
+    console.log(myUser, "<= userdetails")
+    
+    let newExercise = new Exercise({
+      username: myUser.username,
+      description: description,
+      duration: duration,
+      date: presentDate.toString(),
+      _id: _id
+    })
+
+    console.log(newExercise, "<=== newExercise schema")
+
+    newExercise.save( async (err, doc) => {
+      console.log(myUser, "<= just before save")
+      if (err) return console.error(err);
+      console.log("Exercise Saved Successfully");
+      res.json({
+        "added": true,
+        "username": myUser.username,
+        "description": description,
+        "duration": parseInt(duration),
+        "date": presentDate.toString(),
+        "_id": myUser._id
+      });
+    });
+  } else {
+    // console.log("next if statement")
+    presentDate = date;
+    if (presentDate.match(/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/)) {
+      let tempDate = presentDate.split('-')
+      tempDate = new Date(tempDate[0],tempDate[1]-1,tempDate[2])
+
+      let myUser = await User.find({_id: _id})
+
+      let newExercise = new Exercise({
+        username: myUser.username,
+        description: description,
+        duration: duration,
+        date: tempDate.toISOString(),
+        _id: myUser["_id"]
+      })
+
+      newExercise.save((err, doc) => {
+        if (err) return console.error(err);
+        // console.log("Saved Successfully");
+        res.json({
+          "added": true,
+          "username": myUser.username,
+          "description": description,
+          "duration": parseInt(duration),
+          "date": tempDate.toISOString(),
+          "_id": myUser["_id"]
+        });
+      });
+      
+    } else {
+      res.json({error: "Invalid Date Format"})
+    }
+  }
+})
+
+app.get('')
+
+app.get("/api/:date", (req, res) => {
   let date = req.params.date;
 
   if (parseInt(date) > 7000) {
