@@ -257,13 +257,14 @@ app.get("/api/:date", (req, res) => {
 
   let requiredDate = new Date(date);
   console.log(date);
-  if (requiredDate === "Invalid Date") {
-    res.json({ error: "Invalid Date" });
-  } else {
+  if (requiredDate != "Invalid Date") {
     res.json({
       unix: requiredDate.getTime(),
       utc: requiredDate.toUTCString(),
     });
+  } else {
+    res.json({ error: "Invalid Date" });
+  
   }
 });
 
