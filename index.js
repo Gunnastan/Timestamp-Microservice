@@ -100,8 +100,8 @@ app.post("/api/shorturl", function (req, res) {
     if (error) return console.error(err);
     console.log("Saved Successfully");
     res.json({
-      "short url": newURL.short_url,
-      "original url": newURL.original_url,
+      "short_url": newURL.short_url,
+      "original_url": newURL.original_url,
       suffix: newURL.suffix,
       saved: true,
     });
